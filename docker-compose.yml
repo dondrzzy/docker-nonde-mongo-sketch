@@ -1,15 +1,41 @@
 version: '3'
+
 services:
   app:
+    # can specify an image name with
+    # image: node_app
     container_name: docker-node-mongo
     restart: always
     build: .
+    command: npm run start.dev
     ports:
       - '80:3000'
+    env_file:
+      - ./docker/.local.env
     links:
       - mongo
+    volumes:
+      # create a volume in the current directory for the node app,
+      # should match the WORKDIR in the dockerfile, this will also contain the node_modules
+      - .:/home/node/app
+    depends_on:
+      # will wait until the image/service is created before starting this service
+      - mongo
+    environment:
+      # you can set up environment variables here if you want to
+      # DB_NAME: someDbName
   mongo:
     container_name: mongo
     image: mongo
     ports:
       - '27017:27017'
+    volumes:
+      # bind-mount volumes, checkout https://medium.com/better-programming/persistent-databases-using-dockers-volumes-and-mongodb-9ac284c25b39
+      # user can specify the location of the volume on the host filesystem
+      # - ~/mongo/data:/data/db
+      #  Docker-managed volumes
+      # this creates a named volume. USer does not choose a location
+      # These are created in the portion of the host’s filesystem owned by Docker
+      - mongo:/data/db
+volumes:
+  mongo:

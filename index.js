@@ -9,15 +9,27 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Connect to MongoDB
+// const dbUri = 'mongodb+srv://dondrzzy:IwsyBI4SnfkPKwGd@cluster0.pldus.mongodb.net/test'
+let dbUri = ''
+if (process.env.NODE_ENV === 'production') {
+  console.log('environment:production');
+  dbUri = 'mongodb+srv://dondrzzy:IwsyBI4SnfkPKwGd@cluster0.pldus.mongodb.net/test'
+  console.log('dbUri', dbUri);
+} else {
+  console.log('environment:local');
+  dbUri = 'mongodb://mongo:27017/docker-node-mongo'
+}
 mongoose
   .connect(
-    'mongodb://mongo:27017/docker-node-mongo',
+    dbUri,
     { useNewUrlParser: true }
   )
   .then(() => console.log('MongoDB Connected'))
   .catch(err => console.log(err));
 
 const Item = require('./models/Item');
+
+
 
 app.get('/', (req, res) => {
   Item.find()
@@ -33,6 +45,6 @@ app.post('/item/add', (req, res) => {
   newItem.save().then(item => res.redirect('/'));
 });
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-app.listen(port, () => console.log('Server running...'));
+app.listen(port, () => console.log('Server running... on port ', port));
